@@ -27,13 +27,11 @@ import android.content.Intent
 import android.os.Message
 import android.os.Messenger
 import android.os.RemoteException
-import android.os.SystemClock
 import android.support.v4.app.NotificationCompat
 import android.util.Log
 import java.io.BufferedInputStream
 import java.util.*
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 
 /**
@@ -53,7 +51,12 @@ class MyJobService : JobService() {
      */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         activityMessenger = intent.getParcelableExtra(MESSENGER_INTENT_KEY)
-        postNotification()
+        if (intent.action != STOPFOREGROUND_ACTION) {
+            postNotification()
+        } else {
+            stopForeground(true)
+            stopSelf()
+        }
         return Service.START_STICKY
     }
 
@@ -71,7 +74,17 @@ class MyJobService : JobService() {
                 .setContentText(content)
                 .setSmallIcon(R.drawable.ic_launcher_background)
                 .setContentIntent(getLauncherIntent())
+                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", getStopIntent())
+                .setCategory(NotificationCompat.CATEGORY_SERVICE)
+                .setPriority(NotificationCompat.PRIORITY_MAX)
+                .setWhen(0)
                 .build()
+    }
+
+    private fun getStopIntent(): PendingIntent {
+        val cancelIntent = Intent(STOPFOREGROUND_ACTION)
+
+        return PendingIntent.getBroadcast(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     private fun getLauncherIntent(): PendingIntent {
@@ -81,32 +94,49 @@ class MyJobService : JobService() {
         return PendingIntent.getActivity(this, 0, notificationIntent, 0)
     }
 
+    private fun lastSyncTime(): String {
+        val currentTime = System.currentTimeMillis()
+        val calendar = Calendar.getInstance()
+        calendar.timeInMillis = currentTime
+
+        val hour = calendar.get(Calendar.HOUR)
+        val minute = calendar.get(Calendar.MINUTE)
+
+        return " / Last sync at: $hour:$minute"
+    }
+
     override fun onStartJob(params: JobParameters): Boolean {
         // The work that this service "does" is simply wait for a certain duration and finish
         // the job (on another thread).
         Log.i(TAG, "on start job: ${params.jobId}")
 
-        executor.execute({getNanopoolInfo(params)})
+        executor.execute({ refreshInfo(params)})
 
-        // Return true as there's more work to be done with this job.
         return true
     }
 
-    private fun getNanopoolInfo(params: JobParameters) {
-        val networkClient = NetworkClient()
-        val stream = BufferedInputStream(
-                networkClient.get("https://api.nanopool.org/v1/eth/user/:address"))
-        val accInfo = NanopoolParser().readJson(stream)
-
-        val title = accInfo.workers[0].id
+    private fun refreshInfo(params: JobParameters) {
+        val account = getAccount()
+        updateNotification(account)
 //        val lastOnline = getLastOnline(accInfo.workers[0].lastShare)
-        val content = "Curr Mh/s: ${accInfo.hashrate} / 6h Avg Mh/s: ${accInfo.avgHashrate[2]}"
+
+        jobFinished(params, false)
+    }
+
+    private fun updateNotification(account: Account) {
+        val title = account.workers[0].id + lastSyncTime()
+        val content = "Curr Mh/s: ${account.hashrate} / 6h Avg Mh/s: ${account.avgHashrate[2]}"
 
         val notificationManager: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val notification = getNotification(title, content)
         notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
+    }
 
-        jobFinished(params, false)
+    private fun getAccount(): Account {
+        val networkClient = NetworkClient()
+        val stream = BufferedInputStream(
+                networkClient.get("https://api.nanopool.org/v1/eth/user/:address"))
+        return NanopoolParser().readJson(stream)
     }
 
     fun getLastOnline(lastTime: Long): String {
@@ -144,6 +174,11 @@ class MyJobService : JobService() {
         } catch (e: RemoteException) {
             Log.e(TAG, "Error passing service object back to activity.")
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        stopForeground(true)
     }
 
     companion object {

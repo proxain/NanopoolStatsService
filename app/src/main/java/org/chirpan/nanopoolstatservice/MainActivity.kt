@@ -19,8 +19,6 @@ import java.io.InputStreamReader
 
 class MainActivity : AppCompatActivity() {
 
-    private val okHttpClient: OkHttpClient = OkHttpClient()
-
     private lateinit var serviceComponent: ComponentName
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -31,11 +29,13 @@ class MainActivity : AppCompatActivity() {
 
         val builder = JobInfo.Builder(SCHEDULED_JOB_ID, serviceComponent)
         builder.setPeriodic(SCHEDULED_JOB_REPEATE_TIME)
+        builder.setPersisted(true)
         builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
 
         val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
         jobScheduler.schedule(builder.build())
 
+        finish()
     }
 
     override fun onStart() {
@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStop() {
         super.onStop()
-        stopService(Intent(this, MyJobService::class.java))
+//        stopService(Intent(this, MyJobService::class.java))
     }
 }
 
