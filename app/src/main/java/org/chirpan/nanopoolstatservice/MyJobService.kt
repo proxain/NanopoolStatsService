@@ -20,8 +20,11 @@ import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
+import android.app.job.JobInfo
 import android.app.job.JobParameters
+import android.app.job.JobScheduler
 import android.app.job.JobService
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.os.Message
@@ -45,6 +48,16 @@ class MyJobService : JobService() {
 
     private var activityMessenger: Messenger? = null
 
+    private lateinit var jobScheduler: JobScheduler
+    private lateinit var serviceComponent: ComponentName
+
+    override fun onCreate() {
+        super.onCreate()
+
+        jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        serviceComponent = ComponentName(packageName, MyJobService::class.java.name)
+    }
+
     /**
      * When the app's MainActivity is created, it starts this service. This is so that the
      * activity and this service can communicate back and forth. See "setUiCallback()"
@@ -52,12 +65,23 @@ class MyJobService : JobService() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         activityMessenger = intent.getParcelableExtra(MESSENGER_INTENT_KEY)
         if (intent.action != STOPFOREGROUND_ACTION) {
+            scheduleJob()
             postNotification()
         } else {
             stopForeground(true)
             stopSelf()
         }
         return Service.START_STICKY
+    }
+
+    private fun scheduleJob() {
+        val builder = JobInfo.Builder(SCHEDULED_JOB_ID, serviceComponent)
+        builder.setPeriodic(SCHEDULED_JOB_REPEATE_TIME)
+        builder.setPersisted(true)
+        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+
+        val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        jobScheduler.schedule(builder.build())
     }
 
     private fun postNotification() {
@@ -99,7 +123,7 @@ class MyJobService : JobService() {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = currentTime
 
-        val hour = calendar.get(Calendar.HOUR)
+        val hour = calendar.get(Calendar.HOUR_OF_DAY)
         val minute = calendar.get(Calendar.MINUTE)
 
         return " / Last sync at: $hour:$minute"
@@ -135,7 +159,7 @@ class MyJobService : JobService() {
     private fun getAccount(): Account {
         val networkClient = NetworkClient()
         val stream = BufferedInputStream(
-                networkClient.get("https://api.nanopool.org/v1/eth/user/:address"))
+                networkClient.get("https://api.nanopool.org/v1/eth/user/$ETH_ADDRESS"))
         return NanopoolParser().readJson(stream)
     }
 

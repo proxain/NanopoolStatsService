@@ -36,6 +36,8 @@ class NanopoolParser {
     }
 
     private fun parseData(response: JSONObject): Account {
+        Log.i("NanopoolParser", response.toString())
+
         val data = response.getJSONObject("data")
         val account = data.getString("account")
         val unconfirmed_balance = data.getString("unconfirmed_balance")

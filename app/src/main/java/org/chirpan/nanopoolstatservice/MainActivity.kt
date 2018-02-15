@@ -19,23 +19,21 @@ import java.io.InputStreamReader
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var serviceComponent: ComponentName
+//    private lateinit var serviceComponent: ComponentName
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        serviceComponent = ComponentName(this, MyJobService::class.java)
+//        serviceComponent = ComponentName(this, MyJobService::class.java)
 
-        val builder = JobInfo.Builder(SCHEDULED_JOB_ID, serviceComponent)
-        builder.setPeriodic(SCHEDULED_JOB_REPEATE_TIME)
-        builder.setPersisted(true)
-        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-
-        val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-        jobScheduler.schedule(builder.build())
-
-        finish()
+//        val builder = JobInfo.Builder(SCHEDULED_JOB_ID, serviceComponent)
+//        builder.setPeriodic(SCHEDULED_JOB_REPEATE_TIME)
+//        builder.setPersisted(true)
+//        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
+//
+//        val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+//        jobScheduler.schedule(builder.build())
     }
 
     override fun onStart() {
@@ -44,6 +42,7 @@ class MainActivity : AppCompatActivity() {
 //        val messengerIncoming = Messenger(handler)
 //        startServiceIntent.putExtra(MESSENGER_INTENT_KEY, messengerIncoming)
         startService(startServiceIntent)
+        finish()
     }
 
     override fun onStop() {
