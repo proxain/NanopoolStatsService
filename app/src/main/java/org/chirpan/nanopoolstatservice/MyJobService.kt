@@ -95,7 +95,7 @@ class MyJobService : JobService() {
     private fun getNanopoolInfo(params: JobParameters) {
         val networkClient = NetworkClient()
         val stream = BufferedInputStream(
-                networkClient.get("https://api.nanopool.org/v1/eth/user/0xC0Fd6F46e873468Da3e59065f95eE522f32E4408"))
+                networkClient.get("https://api.nanopool.org/v1/eth/user/:address"))
         val accInfo = NanopoolParser().readJson(stream)
 
         val title = accInfo.workers[0].id

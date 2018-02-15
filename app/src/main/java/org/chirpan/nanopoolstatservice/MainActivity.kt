@@ -30,7 +30,7 @@ class MainActivity : AppCompatActivity() {
         serviceComponent = ComponentName(this, MyJobService::class.java)
 
         val builder = JobInfo.Builder(SCHEDULED_JOB_ID, serviceComponent)
-        builder.setPeriodic(/*SCHEDULED_JOB_REPEATE_TIME*/ 30000)
+        builder.setPeriodic(SCHEDULED_JOB_REPEATE_TIME)
         builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
 
         val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
