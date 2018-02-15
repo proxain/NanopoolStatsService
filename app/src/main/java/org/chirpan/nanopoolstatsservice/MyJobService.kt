@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.chirpan.nanopoolstatservice
+package org.chirpan.nanopoolstatsservice
 
 import android.app.Notification
 import android.app.NotificationManager
@@ -64,13 +64,22 @@ class MyJobService : JobService() {
      */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         activityMessenger = intent.getParcelableExtra(MESSENGER_INTENT_KEY)
-        if (intent.action == STOPFOREGROUND_ACTION) {
-            stopForeground(true)
-            stopSelf()
-        } else {
-            scheduleJob()
-            postNotification()
+
+        when (intent.action) {
+            STOPFOREGROUND_ACTION -> {
+                stopForeground(true)
+                stopSelf()
+            }
+            REFRESH_JOB_ACTION -> {
+                jobScheduler.cancelAll()
+                scheduleJob()
+            }
+            else -> {
+                scheduleJob()
+                postNotification()
+            }
         }
+
         return Service.START_STICKY
     }
 
@@ -91,32 +100,49 @@ class MyJobService : JobService() {
 
     }
 
-    private fun getNotification(title: String = "Notification", content: String = "Service notification"): Notification {
-        return NotificationCompat.Builder(this, "NanopoolSS")
+    private fun getNotification(title: String = "Loading stats",
+                                content: String = "Sending request",
+                                moreInfo: String? = null): Notification {
+
+        val builder = NotificationCompat.Builder(applicationContext, "NanopoolSS")
                 .setContentTitle(title)
                 .setTicker("Hello miner")
                 .setContentText(content)
                 .setSmallIcon(R.drawable.ic_launcher_background)
-                .setContentIntent(getLauncherIntent())
-                .addAction(android.R.drawable.ic_menu_close_clear_cancel, "Stop", getStopIntent())
+//                .setContentIntent(getLauncherIntent())
+                .addAction(R.drawable.ic_highlight_off_black_24dp, "Stop", getStopIntent())
+                .addAction(R.drawable.ic_restore_black_24dp, "Refresh", getRefreshIntent())
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .setPriority(NotificationCompat.PRIORITY_MAX)
                 .setWhen(0)
-                .build()
+
+        if (moreInfo != null) {
+            builder.setStyle(NotificationCompat.BigTextStyle().bigText(content + moreInfo))
+        }
+
+        return builder.build()
+    }
+
+    private fun getRefreshIntent(): PendingIntent {
+        val refreshJobIntent = Intent(this, MyJobService::class.java)
+        refreshJobIntent.action = REFRESH_JOB_ACTION
+
+        return PendingIntent.getService(applicationContext, 0, refreshJobIntent, PendingIntent.FLAG_UPDATE_CURRENT)
     }
 
     private fun getStopIntent(): PendingIntent {
-        val cancelIntent = Intent(STOPFOREGROUND_ACTION)
-
-        return PendingIntent.getBroadcast(this, 0, cancelIntent, PendingIntent.FLAG_UPDATE_CURRENT)
+        val stopForeground = Intent(this, MyJobService::class.java)
+                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        stopForeground.action = STOPFOREGROUND_ACTION
+        return PendingIntent.getService(applicationContext, 0, stopForeground, PendingIntent.FLAG_CANCEL_CURRENT)
     }
 
-    private fun getLauncherIntent(): PendingIntent {
-        val notificationIntent = Intent(this, MainActivity::class.java)
-        notificationIntent.action = MAIN_ACTION
-        notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-        return PendingIntent.getActivity(this, 0, notificationIntent, 0)
-    }
+//    private fun getLauncherIntent(): PendingIntent {
+//        val notificationIntent = Intent(this, MainActivity::class.java)
+//        notificationIntent.action =
+//        notificationIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//        return PendingIntent.getActivity(this, 0, notificationIntent, 0)
+//    }
 
     private fun lastSyncTime(): String {
         val currentTime = System.currentTimeMillis()
@@ -136,7 +162,7 @@ class MyJobService : JobService() {
     override fun onStartJob(params: JobParameters): Boolean {
         // The work that this service "does" is simply wait for a certain duration and finish
         // the job (on another thread).
-        Log.i(TAG, "on start job: ${params.jobId}")
+        Log.e(TAG, "on start job: ${params.jobId}")
 
         executor.execute({ refreshInfo(params)})
 
@@ -149,15 +175,21 @@ class MyJobService : JobService() {
 //        val lastOnline = getLastOnline(accInfo.workers[0].lastShare)
 
         jobFinished(params, account == null)
-        Log.i(TAG, "jobFinished needsReschedule: ${account == null}")
+        Log.e(TAG, "jobFinished needsReschedule: ${account == null}")
     }
 
     private fun updateNotification(account: Account?) {
-        val title = account?.workers?.get(0)?.id + lastSyncTime()
-        val content = "Curr Mh/s: ${account?.hashrate} / 6h Avg Mh/s: ${account?.avgHashrate?.get(2)}"
+        val notification = if (account == null) {
+            val content = "Request failed. We try again soon!"
+            getNotification( content)
+        } else {
+            val title = account.workers[0].id + lastSyncTime()
+            val content = "Curr Mh/s: ${account.hashrate} | 6h Avg Mh/s: ${account.avgHashrate[2]}"
+            val moreInfo ="\nBalance: ${account.balance}"
+            getNotification(title, content, moreInfo)
+        }
 
         val notificationManager: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val notification = getNotification(title, content)
         notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
     }
 
@@ -179,7 +211,7 @@ class MyJobService : JobService() {
     override fun onStopJob(params: JobParameters): Boolean {
         // Stop tracking these job parameters, as we've 'finished' executing.
 //        sendMessage(MSG_COLOR_STOP, params.jobId)
-        Log.i(TAG, "on stop job: ${params.jobId}")
+        Log.e(TAG, "on stop job: ${params.jobId}")
 //        stopForeground(true)
 
         // Return false to drop the job.
@@ -198,7 +230,7 @@ class MyJobService : JobService() {
             what = messageID
             obj = params
         }
-        try {
+        val any = try {
             activityMessenger?.send(message)
         } catch (e: RemoteException) {
             Log.e(TAG, "Error passing service object back to activity.")

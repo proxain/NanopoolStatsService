@@ -1,20 +1,8 @@
-package org.chirpan.nanopoolstatservice
+package org.chirpan.nanopoolstatsservice
 
-import android.app.job.JobInfo
-import android.app.job.JobScheduler
-import android.content.ComponentName
-import android.content.Context
 import android.content.Intent
-import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
-import android.widget.TextView
-import okhttp3.OkHttpClient
-import okhttp3.Request
-import org.json.JSONObject
-import java.io.BufferedInputStream
-import java.io.BufferedReader
-import java.io.InputStreamReader
 
 
 class MainActivity : AppCompatActivity() {

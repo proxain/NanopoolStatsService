@@ -1,4 +1,4 @@
-package org.chirpan.nanopoolstatservice
+package org.chirpan.nanopoolstatsservice
 
 import android.support.test.InstrumentationRegistry
 import android.support.test.runner.AndroidJUnit4

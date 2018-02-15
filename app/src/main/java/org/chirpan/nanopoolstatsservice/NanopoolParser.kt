@@ -1,4 +1,4 @@
-package org.chirpan.nanopoolstatservice
+package org.chirpan.nanopoolstatsservice
 
 import android.util.Log
 import org.json.JSONObject
@@ -16,7 +16,13 @@ class NanopoolParser {
         val jsonData = readStream(inputStream)
         val response = JSONObject(jsonData)
 
-        return parse(response)
+        var account: Account? = null
+        try {
+            account = parse(response)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return account
     }
 
     private fun readStream(inputStream: BufferedInputStream): String {
@@ -37,7 +43,7 @@ class NanopoolParser {
     }
 
     private fun parseData(response: JSONObject): Account {
-        Log.i("NanopoolParser", response.toString())
+        Log.e("NanopoolParser", response.toString())
 
         val data = response.getJSONObject("data")
         val account = data.getString("account")

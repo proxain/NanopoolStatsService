@@ -1,4 +1,4 @@
-package org.chirpan.nanopoolstatservice
+package org.chirpan.nanopoolstatsservice
 
 /**
  * Created by layman on 2/13/18.

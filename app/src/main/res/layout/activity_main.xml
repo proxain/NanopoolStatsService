@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="org.chirpan.nanopoolstatservice.MainActivity">
+    tools:context="org.chirpan.nanopoolstatsservice.MainActivity">
 
     <TextView android:id="@+id/response_console"
         android:layout_width="wrap_content"

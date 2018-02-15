@@ -1,4 +1,4 @@
-package org.chirpan.nanopoolstatservice
+package org.chirpan.nanopoolstatsservice
 
 import org.junit.Test
 
