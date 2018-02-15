@@ -6,7 +6,7 @@
 
 package org.chirpan.nanopoolstatservice
 
-@JvmField val ETH_ADDRESS = ":address"
+@JvmField val ETH_ADDRESS = "0xC0Fd6F46e873468Da3e59065f95eE522f32E4408"
 
 @JvmField val MESSENGER_INTENT_KEY = "${BuildConfig.APPLICATION_ID}.MESSENGER_INTENT_KEY"
 @JvmField val MAIN_ACTION = "com.truiton.foregroundservice.action.main"
@@ -14,4 +14,4 @@ package org.chirpan.nanopoolstatservice
 @JvmField val STOPFOREGROUND_ACTION = "com.truiton.foregroundservice.action.stopforeground"
 @JvmField val FOREGROUND_SERVICE_NOTIFCATION_ID = 101
 @JvmField val SCHEDULED_JOB_ID = 551948
-@JvmField val SCHEDULED_JOB_REPEATE_TIME = 900000L
+@JvmField val SCHEDULED_JOB_REPEATE_TIME = 600000L

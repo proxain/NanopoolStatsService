@@ -64,12 +64,12 @@ class MyJobService : JobService() {
      */
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         activityMessenger = intent.getParcelableExtra(MESSENGER_INTENT_KEY)
-        if (intent.action != STOPFOREGROUND_ACTION) {
-            scheduleJob()
-            postNotification()
-        } else {
+        if (intent.action == STOPFOREGROUND_ACTION) {
             stopForeground(true)
             stopSelf()
+        } else {
+            scheduleJob()
+            postNotification()
         }
         return Service.START_STICKY
     }
@@ -144,19 +144,20 @@ class MyJobService : JobService() {
         updateNotification(account)
 //        val lastOnline = getLastOnline(accInfo.workers[0].lastShare)
 
-        jobFinished(params, false)
+        jobFinished(params, account == null)
+        Log.i(TAG, "jobFinished needsReschedule: ${account == null}")
     }
 
-    private fun updateNotification(account: Account) {
-        val title = account.workers[0].id + lastSyncTime()
-        val content = "Curr Mh/s: ${account.hashrate} / 6h Avg Mh/s: ${account.avgHashrate[2]}"
+    private fun updateNotification(account: Account?) {
+        val title = account?.workers?.get(0)?.id + lastSyncTime()
+        val content = "Curr Mh/s: ${account?.hashrate} / 6h Avg Mh/s: ${account?.avgHashrate?.get(2)}"
 
         val notificationManager: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val notification = getNotification(title, content)
         notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
     }
 
-    private fun getAccount(): Account {
+    private fun getAccount(): Account? {
         val networkClient = NetworkClient()
         val stream = BufferedInputStream(
                 networkClient.get("https://api.nanopool.org/v1/eth/user/$ETH_ADDRESS"))

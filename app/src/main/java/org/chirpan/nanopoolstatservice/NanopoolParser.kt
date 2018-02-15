@@ -12,7 +12,7 @@ import java.io.Reader
  */
 class NanopoolParser {
 
-    fun readJson(inputStream: BufferedInputStream): Account {
+    fun readJson(inputStream: BufferedInputStream): Account? {
         val jsonData = readStream(inputStream)
         val response = JSONObject(jsonData)
 
@@ -26,10 +26,11 @@ class NanopoolParser {
         return stringBuilder.toString()
     }
 
-    private fun parse(response: JSONObject): Account {
+    private fun parse(response: JSONObject): Account? {
         val status = getStatus(response)
         if (!status) {
             Log.e("NanopoolParser", "status not true")
+            return null
         }
 
         return parseData(response)
