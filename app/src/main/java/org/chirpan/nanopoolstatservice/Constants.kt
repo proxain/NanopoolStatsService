@@ -6,7 +6,7 @@
 
 package org.chirpan.nanopoolstatservice
 
-@JvmField val ETH_ADDRESS = "0xC0Fd6F46e873468Da3e59065f95eE522f32E4408"
+@JvmField val ETH_ADDRESS = ":address"
 
 @JvmField val MESSENGER_INTENT_KEY = "${BuildConfig.APPLICATION_ID}.MESSENGER_INTENT_KEY"
 @JvmField val MAIN_ACTION = "com.truiton.foregroundservice.action.main"
