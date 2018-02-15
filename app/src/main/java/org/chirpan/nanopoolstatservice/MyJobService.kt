@@ -125,8 +125,12 @@ class MyJobService : JobService() {
 
         val hour = calendar.get(Calendar.HOUR_OF_DAY)
         val minute = calendar.get(Calendar.MINUTE)
+        var result = " / Last sync at: $hour:$minute"
+        if (minute < 10) {
+            result = " / Last sync at: $hour:0$minute"
+        }
 
-        return " / Last sync at: $hour:$minute"
+        return result
     }
 
     override fun onStartJob(params: JobParameters): Boolean {
