@@ -1,4 +1,4 @@
-package org.chirpan.nanopoolstatsservice
+package org.chirpan.nanopoolstatsservice.service
 
 import okhttp3.OkHttpClient
 import okhttp3.Request

@@ -1,4 +1,4 @@
-package org.chirpan.nanopoolstatsservice
+package org.chirpan.nanopoolstatsservice.data
 
 /**
  * Created by layman on 2/13/18.
@@ -6,9 +6,14 @@ package org.chirpan.nanopoolstatsservice
 data class Account(val account: String,
                    val unconfirmed_balance: String,
                    val balance: String,
-                   val hashrate: String) {
+                   val hashrate: String,
+                   val status: Boolean = false) {
     lateinit var avgHashrate: Array<String>
     lateinit var workers: ArrayList<Worker>
+
+    fun getTitle(): String {
+        return workers[0].id
+    }
 
     override fun toString(): String {
         var result = super.toString() +

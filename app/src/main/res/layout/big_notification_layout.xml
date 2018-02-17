@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/layout"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:padding="10dp" >
+    <ImageView
+        android:src="@mipmap/ic_launcher"
+        android:id="@+id/image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_marginEnd="10dp" />
+    <RelativeLayout android:id="@+id/title_info_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_toEndOf="@id/image">
+        <TextView
+            android:textSize="13sp"
+            android:textColor="#000"
+            android:text="@string/init_notify_title"
+            android:id="@+id/title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:gravity="start"/>
+
+        <TextView
+            android:id="@+id/sync_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/synced"
+            android:textColor="@android:color/holo_green_dark"
+            android:textSize="13sp"
+            android:layout_alignParentEnd="true"
+            android:visibility="gone"/>
+    </RelativeLayout>
+    <TextView
+        android:textSize="13sp"
+        android:textColor="#000"
+        android:text="@string/init_notify_content"
+        android:id="@+id/text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toEndOf="@id/image"
+        android:layout_below="@id/title_info_container"
+        android:visibility="gone"
+        />
+    <LinearLayout android:id="@+id/stats_info_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_toEndOf="@id/image"
+        android:layout_below="@id/title_info_container"
+        android:weightSum="3"
+        android:visibility="visible">
+        <TextView
+            android:textSize="13sp"
+            android:textColor="#000"
+            android:text="Online"
+            android:id="@+id/status"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="start"/>
+
+        <TextView
+            android:textSize="13sp"
+            android:textColor="#000"
+            android:text="123.1 Mh/s"
+            android:id="@+id/hashes"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"/>
+
+        <TextView
+            android:textSize="13sp"
+            android:textColor="#000"
+            android:text="23:18"
+            android:id="@+id/last_sync"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"/>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_toEndOf="@+id/image"
+        android:layout_below="@+id/stats_info_container"
+        android:weightSum="2"
+        android:layout_marginTop="12dp">
+        <LinearLayout android:id="@+id/stop_action"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_highlight_off_black_24dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:textColor="#000"
+                android:text="@string/notify_btn_stop"
+                android:padding="4dp" />
+
+        </LinearLayout>
+        <LinearLayout android:id="@+id/refresh_action"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center">
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_restore_black_24dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="13sp"
+                android:textColor="#000"
+                android:text="@string/notify_btn_refresh"
+                android:padding="4dp" />
+        </LinearLayout>
+    </LinearLayout>
+</RelativeLayout>

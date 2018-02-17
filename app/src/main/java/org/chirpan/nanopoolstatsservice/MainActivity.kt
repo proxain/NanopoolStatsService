@@ -3,6 +3,7 @@ package org.chirpan.nanopoolstatsservice
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
+import org.chirpan.nanopoolstatsservice.service.NanopoolSyncService
 
 
 class MainActivity : AppCompatActivity() {
@@ -26,7 +27,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        val startServiceIntent = Intent(this, MyJobService::class.java)
+        val startServiceIntent = Intent(this, NanopoolSyncService::class.java)
 //        val messengerIncoming = Messenger(handler)
 //        startServiceIntent.putExtra(MESSENGER_INTENT_KEY, messengerIncoming)
         startService(startServiceIntent)

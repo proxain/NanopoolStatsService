@@ -1,4 +1,4 @@
-package org.chirpan.nanopoolstatsservice
+package org.chirpan.nanopoolstatsservice.data
 
 import java.util.*
 

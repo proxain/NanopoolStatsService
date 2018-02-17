@@ -1,6 +1,8 @@
-package org.chirpan.nanopoolstatsservice
+package org.chirpan.nanopoolstatsservice.service
 
 import android.util.Log
+import org.chirpan.nanopoolstatsservice.data.Account
+import org.chirpan.nanopoolstatsservice.data.Worker
 import org.json.JSONObject
 import java.io.BufferedInputStream
 import java.io.BufferedReader

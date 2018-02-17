@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package org.chirpan.nanopoolstatsservice
+package org.chirpan.nanopoolstatsservice.obsoleted
 
-import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.app.job.JobInfo
 import android.app.job.JobParameters
-import android.app.job.JobScheduler
 import android.app.job.JobService
 import android.content.ComponentName
 import android.content.Context
@@ -30,8 +27,12 @@ import android.content.Intent
 import android.os.Message
 import android.os.Messenger
 import android.os.RemoteException
-import android.support.v4.app.NotificationCompat
 import android.util.Log
+import org.chirpan.nanopoolstatsservice.*
+import org.chirpan.nanopoolstatsservice.data.Account
+import org.chirpan.nanopoolstatsservice.service.NanopoolParser
+import org.chirpan.nanopoolstatsservice.service.NetworkClient
+import org.chirpan.nanopoolstatsservice.service.NotificationProvider
 import java.io.BufferedInputStream
 import java.util.*
 import java.util.concurrent.Executors
@@ -45,17 +46,25 @@ import java.util.concurrent.Executors
 class MyJobService : JobService() {
 
     private val executor = Executors.newSingleThreadExecutor()
+    private lateinit var notificationManager: NotificationManager
 
     private var activityMessenger: Messenger? = null
+    private var runningAccount: Account? = null
 
-    private lateinit var jobScheduler: JobScheduler
     private lateinit var serviceComponent: ComponentName
+    private lateinit var jobProvider: JobProvider
+    private lateinit var notificationProvider: NotificationProvider
+
 
     override fun onCreate() {
         super.onCreate()
 
-        jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         serviceComponent = ComponentName(packageName, MyJobService::class.java.name)
+        jobProvider = JobProvider(applicationContext, serviceComponent)
+        notificationProvider = NotificationProvider(applicationContext)
+        notificationProvider.stopIntent = getStopIntent()
+        notificationProvider.refreshIntent = getRefreshIntent()
     }
 
     /**
@@ -65,63 +74,54 @@ class MyJobService : JobService() {
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
         activityMessenger = intent.getParcelableExtra(MESSENGER_INTENT_KEY)
 
+        Log.e(TAG, "onStartCommand intent: $intent")
+
         when (intent.action) {
             STOPFOREGROUND_ACTION -> {
                 stopForeground(true)
                 stopSelf()
             }
             REFRESH_JOB_ACTION -> {
-                jobScheduler.cancelAll()
-                scheduleJob()
+                jobProvider.scheduleRefreshJob()
+                postUserRefreshNotification(runningAccount != null)
             }
             else -> {
-                scheduleJob()
-                postNotification()
+                jobProvider.scheduleRegularJob()
+                startForegroundWithNotification()
             }
         }
 
         return Service.START_STICKY
     }
 
-    private fun scheduleJob() {
-        val builder = JobInfo.Builder(SCHEDULED_JOB_ID, serviceComponent)
-        builder.setPeriodic(SCHEDULED_JOB_REPEATE_TIME)
-        builder.setPersisted(true)
-        builder.setRequiredNetworkType(JobInfo.NETWORK_TYPE_ANY)
-
-        val jobScheduler = getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
-        jobScheduler.schedule(builder.build())
-    }
-
-    private fun postNotification() {
-        val notification = getNotification()
+    private fun startForegroundWithNotification() {
+        val notification = notificationProvider.getInitNotification()
 
         startForeground(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
-
     }
 
-    private fun getNotification(title: String = "Loading stats",
-                                content: String = "Sending request",
-                                moreInfo: String? = null): Notification {
-
-        val builder = NotificationCompat.Builder(applicationContext, "NanopoolSS")
-                .setContentTitle(title)
-                .setTicker("Hello miner")
-                .setContentText(content)
-                .setSmallIcon(R.drawable.ic_launcher_background)
-//                .setContentIntent(getLauncherIntent())
-                .addAction(R.drawable.ic_highlight_off_black_24dp, "Stop", getStopIntent())
-                .addAction(R.drawable.ic_restore_black_24dp, "Refresh", getRefreshIntent())
-                .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .setPriority(NotificationCompat.PRIORITY_MAX)
-                .setWhen(0)
-
-        if (moreInfo != null) {
-            builder.setStyle(NotificationCompat.BigTextStyle().bigText(content + moreInfo))
-        }
-
-        return builder.build()
-    }
+//    private fun getNotification(title: String = "Loading stats",
+//                                content: String = "Sending request",
+//                                moreInfo: String? = null): Notification {
+//
+//        val builder = NotificationCompat.Builder(applicationContext, "NanopoolSS")
+//                .setContentTitle(title)
+//                .setTicker("Hello miner")
+//                .setContentText(content)
+//                .setSmallIcon(R.drawable.ic_launcher_background)
+////                .setContentIntent(getLauncherIntent())
+//                .addAction(R.drawable.ic_highlight_off_black_24dp, "Stop", getStopIntent())
+//                .addAction(R.drawable.ic_restore_black_24dp, "Refresh", getRefreshIntent())
+//                .setCategory(NotificationCompat.CATEGORY_SERVICE)
+//                .setPriority(NotificationCompat.PRIORITY_MAX)
+//                .setWhen(0)
+//
+//        if (moreInfo != null) {
+//            builder.setStyle(NotificationCompat.BigTextStyle().bigText(content + moreInfo))
+//        }
+//
+//        return builder.build()
+//    }
 
     private fun getRefreshIntent(): PendingIntent {
         val refreshJobIntent = Intent(this, MyJobService::class.java)
@@ -151,9 +151,13 @@ class MyJobService : JobService() {
 
         val hour = calendar.get(Calendar.HOUR_OF_DAY)
         val minute = calendar.get(Calendar.MINUTE)
-        var result = " / Last sync at: $hour:$minute"
-        if (minute < 10) {
-            result = " / Last sync at: $hour:0$minute"
+        var result = "@ $hour:$minute"
+        if (hour > 10 && minute < 10) {
+            result = "@ $hour:0$minute"
+        } else if (hour < 10 && minute < 10) {
+            result = "@ 0$hour:0$minute"
+        } else if (hour <10 && minute > 10) {
+            result = "@ 0$hour:$minute"
         }
 
         return result
@@ -171,32 +175,53 @@ class MyJobService : JobService() {
 
     private fun refreshInfo(params: JobParameters) {
         val account = getAccount()
-        updateNotification(account)
-//        val lastOnline = getLastOnline(accInfo.workers[0].lastShare)
 
-        jobFinished(params, account == null)
-        Log.e(TAG, "jobFinished needsReschedule: ${account == null}")
-    }
-
-    private fun updateNotification(account: Account?) {
-        val notification = if (account == null) {
-            val content = "Request failed. We try again soon!"
-            getNotification( content)
+        val needReschedule = account == null
+        if (!needReschedule) {
+            runningAccount = account!!
+            postUserInfoNotification(runningAccount!!)
         } else {
-            val title = account.workers[0].id + lastSyncTime()
-            val content = "Curr Mh/s: ${account.hashrate} | 6h Avg Mh/s: ${account.avgHashrate[2]}"
-            val moreInfo ="\nBalance: ${account.balance}"
-            getNotification(title, content, moreInfo)
+            postUserRefreshNotification(runningAccount != null)
         }
 
-        val notificationManager: NotificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        jobFinished(params,  needReschedule)
+
+        Log.e(TAG, "jobFinished needsReschedule: $needReschedule")
+    }
+
+    private fun postUserRefreshNotification(hasAccount: Boolean) {
+        val notification = notificationProvider.getUserRefreshNotification(hasAccount)
+        notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
+
+    }
+
+    private fun postUserInfoNotification(account: Account) {
+        val title = account.workers[0].id
+        val hashes = account.hashrate + "Mh/s"
+        val lastSync = lastSyncTime()
+
+        val notification = notificationProvider.getUserInfoNotification(title, hashes, lastSync)
         notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
     }
+
+//    private fun updateNotification(account: Account?) {
+//        val notification = if (account == null) {
+//            notificationProvider.getErrorRefreshNotification()
+//        } else {
+//            val title = account.workers[0].id + lastSyncTime()
+//            val content = "Curr Mh/s: ${account.hashrate} | 6h Avg Mh/s: ${account.avgHashrate[2]}"
+//            val moreInfo ="\nBalance: ${account.balance}"
+//            getNotification(title, content, moreInfo)
+//        }
+//
+//
+//
+//    }
 
     private fun getAccount(): Account? {
         val networkClient = NetworkClient()
         val stream = BufferedInputStream(
-                networkClient.get("https://api.nanopool.org/v1/eth/user/$ETH_ADDRESS"))
+                networkClient.get("https://api.nanopool.org/v1/eth/user/${ETH_ADDRESS}"))
         return NanopoolParser().readJson(stream)
     }
 
