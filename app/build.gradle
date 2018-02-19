@@ -35,4 +35,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     // OkHttp
     implementation 'com.squareup.okhttp3:okhttp:3.9.1'
+
+    // Chart
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.0.3'
 }

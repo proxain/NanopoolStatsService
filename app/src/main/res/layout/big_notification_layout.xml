@@ -4,9 +4,12 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:padding="10dp" >
+
+
+
     <ImageView
         android:src="@mipmap/ic_launcher"
-        android:id="@+id/image"
+        android:id="@+id/image_icon"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
@@ -15,7 +18,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_toEndOf="@id/image">
+        android:layout_toEndOf="@id/image_icon"
+        android:layout_marginTop="2dp">
         <TextView
             android:textSize="13sp"
             android:textColor="#000"
@@ -32,27 +36,15 @@
             android:text="@string/synced"
             android:textColor="@android:color/holo_green_dark"
             android:textSize="13sp"
-            android:layout_alignParentEnd="true"
-            android:visibility="gone"/>
+            android:layout_alignParentEnd="true" />
     </RelativeLayout>
-    <TextView
-        android:textSize="13sp"
-        android:textColor="#000"
-        android:text="@string/init_notify_content"
-        android:id="@+id/text"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/image"
-        android:layout_below="@id/title_info_container"
-        android:visibility="gone"
-        />
     <LinearLayout android:id="@+id/stats_info_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_toEndOf="@id/image"
-        android:layout_below="@id/title_info_container"
-        android:weightSum="3"
+        android:layout_toEndOf="@id/image_icon"
+        android:layout_below="@+id/title_info_container"
+        android:weightSum="2"
         android:visibility="visible">
         <TextView
             android:textSize="13sp"
@@ -67,16 +59,6 @@
         <TextView
             android:textSize="13sp"
             android:textColor="#000"
-            android:text="123.1 Mh/s"
-            android:id="@+id/hashes"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"/>
-
-        <TextView
-            android:textSize="13sp"
-            android:textColor="#000"
             android:text="23:18"
             android:id="@+id/last_sync"
             android:layout_width="0dp"
@@ -86,49 +68,71 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/adv_stats_info_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_toEndOf="@+id/image"
         android:layout_below="@+id/stats_info_container"
-        android:weightSum="2"
-        android:layout_marginTop="12dp">
-        <LinearLayout android:id="@+id/stop_action"
+        android:layout_toEndOf="@id/image_icon"
+        android:orientation="horizontal"
+        android:visibility="visible"
+        android:weightSum="3">
+
+        <TextView
+            android:id="@+id/six_hour_avg"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center">
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_highlight_off_black_24dp"/>
+            android:gravity="start"
+            android:text="6H: 115.42 Mh/s"
+            android:textColor="#000"
+            android:textSize="11sp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="13sp"
-                android:textColor="#000"
-                android:text="@string/notify_btn_stop"
-                android:padding="4dp" />
-
-        </LinearLayout>
-        <LinearLayout android:id="@+id/refresh_action"
+        <TextView
+            android:id="@+id/hashes"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center">
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:src="@drawable/ic_restore_black_24dp"/>
+            android:gravity="center"
+            android:text="Last: 123.1 Mh/s"
+            android:textColor="#000"
+            android:textSize="11sp" />
 
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="13sp"
-                android:textColor="#000"
-                android:text="@string/notify_btn_refresh"
-                android:padding="4dp" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/balance"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:text="0.231864Ξ"
+            android:textColor="#000"
+            android:textSize="13sp" />
     </LinearLayout>
+
+    <RelativeLayout android:id="@+id/more_info_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/adv_stats_info_container"
+        android:layout_toEndOf="@id/image_icon"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp">
+
+        <include layout="@layout/stats_info_container"
+            android:id="@+id/more_info"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+             android:visibility="invisible"/>
+
+        <include layout="@layout/chart_layout"
+            android:id="@+id/chart_layout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_alignBottom="@+id/more_info"/>
+
+    </RelativeLayout>
+
+    <include layout="@layout/button_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/more_info_container"
+        android:layout_toEndOf="@+id/image_icon"/>
 </RelativeLayout>

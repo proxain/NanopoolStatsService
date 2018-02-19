@@ -35,8 +35,7 @@ class NanopoolSyncService : Service(), SyncManger.TaskFinishedListener {
 
         notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationProvider = NotificationProvider(applicationContext)
-        notificationProvider.stopIntent = getStopIntent()
-        notificationProvider.refreshIntent = getRefreshIntent()
+        notificationProvider.setIntents(getStopIntent(), getRefreshIntent())
     }
 
     override fun onBind(intent: Intent): IBinder? {
@@ -109,11 +108,7 @@ class NanopoolSyncService : Service(), SyncManger.TaskFinishedListener {
     }
 
     private fun postUserInfoNotification(account: Account) {
-        val title = account.workers[0].id
-        val hashes = account.hashrate + "Mh/s"
-        val lastSync = lastSyncTime()
-
-        val notification = notificationProvider.getUserInfoNotification(title, hashes, lastSync)
+        val notification = notificationProvider.getUserInfoNotification(account)
         notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
     }
 

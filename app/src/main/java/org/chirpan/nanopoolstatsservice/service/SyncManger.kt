@@ -41,6 +41,10 @@ class SyncManger(private val taskFinishedListener: TaskFinishedListener,
 
         val refreshTime = if (needReschedule) TASK_FAIL_REFRESH_TIME else TASK_REFRESH_TIME
         executor.schedule({requestInfo()}, refreshTime, TimeUnit.SECONDS)
+
+        if (DEBUG) {
+            Log.i(TAG, "refreshInfo: generalInfo next scheduled after: $refreshTime s.")
+        }
     }
 
     fun startRefreshTask() {

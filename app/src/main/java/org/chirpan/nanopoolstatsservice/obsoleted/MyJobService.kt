@@ -63,8 +63,8 @@ class MyJobService : JobService() {
         serviceComponent = ComponentName(packageName, MyJobService::class.java.name)
         jobProvider = JobProvider(applicationContext, serviceComponent)
         notificationProvider = NotificationProvider(applicationContext)
-        notificationProvider.stopIntent = getStopIntent()
-        notificationProvider.refreshIntent = getRefreshIntent()
+//        notificationProvider.stopIntent = getStopIntent()
+//        notificationProvider.refreshIntent = getRefreshIntent()
     }
 
     /**
@@ -200,8 +200,8 @@ class MyJobService : JobService() {
         val hashes = account.hashrate + "Mh/s"
         val lastSync = lastSyncTime()
 
-        val notification = notificationProvider.getUserInfoNotification(title, hashes, lastSync)
-        notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
+//        val notification = notificationProvider.getUserInfoNotification(title, hashes, lastSync)
+//        notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
     }
 
 //    private fun updateNotification(account: Account?) {
