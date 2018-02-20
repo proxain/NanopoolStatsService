@@ -70,15 +70,24 @@ class NanopoolSyncService : Service(), SyncManger.TaskFinishedListener {
         super.onDestroy()
     }
 
-    override fun onTaskFinished(account: Account?, needReschedule: Boolean) {
-        if (needReschedule) {
-            postUserRefreshNotification(runningAccount != null)
-            return
-        }
-
-        runningAccount = account!!
-        postUserInfoNotification(runningAccount!!)
+    override fun onAccountCreated(account: Account) {
+        runningAccount = account
+        postSmallInfoNotification(account)
     }
+
+    override fun onAccountCompleted(account: Account) {
+        postBigInfoNotification(account)
+    }
+
+//    override fun onTaskFinished(account: Account?, needReschedule: Boolean) {
+//        if (needReschedule) {
+//            postUserRefreshNotification(runningAccount != null)
+//            return
+//        }
+//
+//        runningAccount = account!!
+//        postUserInfoNotification(runningAccount!!)
+//    }
 
 
     private fun startForegroundWithNotification() {
@@ -102,13 +111,23 @@ class NanopoolSyncService : Service(), SyncManger.TaskFinishedListener {
     }
 
     private fun postUserRefreshNotification(hasAccount: Boolean) {
-        val notification = notificationProvider.getUserRefreshNotification(hasAccount)
+        val notification = notificationProvider.getUserRefreshNotification()
         notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
 
     }
 
     private fun postUserInfoNotification(account: Account) {
         val notification = notificationProvider.getUserInfoNotification(account)
+        notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
+    }
+
+    private fun postSmallInfoNotification(account: Account) {
+        val notification = notificationProvider.getSmallInfoNotification(account)
+        notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
+    }
+
+    private fun postBigInfoNotification(account: Account) {
+        val notification = notificationProvider.getBigInfoNotification(account)
         notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
     }
 

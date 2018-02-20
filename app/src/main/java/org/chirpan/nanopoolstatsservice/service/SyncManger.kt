@@ -1,10 +1,9 @@
 package org.chirpan.nanopoolstatsservice.service
 
+import android.os.Handler
 import android.util.Log
 import org.chirpan.nanopoolstatsservice.BuildConfig
 import org.chirpan.nanopoolstatsservice.ETH_ADDRESS
-import org.chirpan.nanopoolstatsservice.TASK_FAIL_REFRESH_TIME
-import org.chirpan.nanopoolstatsservice.TASK_REFRESH_TIME
 import org.chirpan.nanopoolstatsservice.data.Account
 import java.io.BufferedInputStream
 import java.util.concurrent.Executors
@@ -16,10 +15,11 @@ import java.util.concurrent.TimeUnit
 
 class SyncManger(private val taskFinishedListener: TaskFinishedListener,
                  private val autoRefresh: Boolean = true) {
+    private val networkClient = NetworkClient()
     private val executor = Executors.newScheduledThreadPool(2)
 
     fun startRegularTask() {
-        executor.execute({requestInfo(autoRefresh)})
+        executor.scheduleAtFixedRate({requestInfo(autoRefresh)}, 50, 300000, TimeUnit.MILLISECONDS)
     }
 
     private fun requestInfo(refresh: Boolean = false) {
@@ -27,24 +27,36 @@ class SyncManger(private val taskFinishedListener: TaskFinishedListener,
             Log.i(TAG, "requestInfo(refresh = $refresh)")
         }
         val account = getAccount()
-
-        val needReschedule = account == null
-        taskFinishedListener.onTaskFinished(account, needReschedule)
-
-        if (DEBUG) {
-            Log.i(TAG, "refreshInfo: generalInfo finished needReschedule: $needReschedule")
-        }
-
-        if (!refresh && !needReschedule) {
+        if (account == null) {
+            // Fail like a pro
+            Handler().postDelayed({ requestInfo() }, 10000)
             return
         }
 
-        val refreshTime = if (needReschedule) TASK_FAIL_REFRESH_TIME else TASK_REFRESH_TIME
-        executor.schedule({requestInfo()}, refreshTime, TimeUnit.SECONDS)
+        taskFinishedListener.onAccountCreated(account)
 
-        if (DEBUG) {
-            Log.i(TAG, "refreshInfo: generalInfo next scheduled after: $refreshTime s.")
-        }
+        val shareHistory = getShareHistory() ?: return
+
+        account.shareRateTable = shareHistory
+        taskFinishedListener.onAccountCompleted(account)
+
+//        val needReschedule = account == null
+//        taskFinishedListener.onTaskFinished(account, needReschedule)
+//
+//        if (DEBUG) {
+//            Log.i(TAG, "refreshInfo: generalInfo finished needReschedule: $needReschedule")
+//        }
+//
+//        if (!refresh && !needReschedule) {
+//            return
+//        }
+//
+//        val refreshTime = if (needReschedule) TASK_FAIL_REFRESH_TIME else TASK_REFRESH_TIME
+//        executor.schedule({requestInfo()}, refreshTime, TimeUnit.SECONDS)
+//
+//        if (DEBUG) {
+//            Log.i(TAG, "refreshInfo: generalInfo next scheduled after: $refreshTime s.")
+//        }
     }
 
     fun startRefreshTask() {
@@ -52,14 +64,21 @@ class SyncManger(private val taskFinishedListener: TaskFinishedListener,
     }
 
     private fun getAccount(): Account? {
-        val networkClient = NetworkClient()
         val stream = BufferedInputStream(
                 networkClient.get("https://api.nanopool.org/v1/eth/user/${ETH_ADDRESS}"))
-        return NanopoolParser().readJson(stream)
+        return NanopoolParser().readAccount(stream)
+    }
+
+    private fun getShareHistory(): List<Pair<Long, Int>>? {
+        val stream = BufferedInputStream(
+                networkClient.get("https://api.nanopool.org/v1/eth/shareratehistory/${ETH_ADDRESS}"))
+        return NanopoolParser().readShareHistory(stream)
     }
 
     interface TaskFinishedListener {
-        fun onTaskFinished(account: Account? = null, needReschedule: Boolean)
+        fun onAccountCreated(account: Account)
+        fun onAccountCompleted(account: Account)
+//        fun onTaskFinished(account: Account? = null, needReschedule: Boolean)
     }
 
     companion object {

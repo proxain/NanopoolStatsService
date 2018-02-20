@@ -190,7 +190,7 @@ class MyJobService : JobService() {
     }
 
     private fun postUserRefreshNotification(hasAccount: Boolean) {
-        val notification = notificationProvider.getUserRefreshNotification(hasAccount)
+        val notification = notificationProvider.getUserRefreshNotification()
         notificationManager.notify(FOREGROUND_SERVICE_NOTIFCATION_ID, notification)
 
     }
@@ -222,7 +222,7 @@ class MyJobService : JobService() {
         val networkClient = NetworkClient()
         val stream = BufferedInputStream(
                 networkClient.get("https://api.nanopool.org/v1/eth/user/${ETH_ADDRESS}"))
-        return NanopoolParser().readJson(stream)
+        return NanopoolParser().readAccount(stream)
     }
 
     fun getLastOnline(lastTime: Long): String {

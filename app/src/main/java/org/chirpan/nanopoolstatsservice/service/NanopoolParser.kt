@@ -14,7 +14,7 @@ import java.io.Reader
  */
 class NanopoolParser {
 
-    fun readJson(inputStream: BufferedInputStream): Account? {
+    fun readAccount(inputStream: BufferedInputStream): Account? {
         val jsonData = readStream(inputStream)
         val response = JSONObject(jsonData)
 
@@ -25,6 +25,30 @@ class NanopoolParser {
             e.printStackTrace()
         }
         return account
+    }
+
+
+    fun readShareHistory(stream: BufferedInputStream): List<Pair<Long, Int>>? {
+        val jsonData = readStream(stream)
+        val response = JSONObject(jsonData)
+
+        val status = getStatus(response)
+        if (!status) {
+            Log.e("NanopoolParser", "status not true")
+            return null
+        }
+
+        val shareHistoryArr = ArrayList<Pair<Long, Int>>()
+        val data = response.getJSONArray("data")
+        (0..(data.length() - 1)).mapTo(destination = shareHistoryArr) { getShareHistory(data.getJSONObject(it))}
+
+        return shareHistoryArr
+    }
+
+    private fun getShareHistory(jsonObject: JSONObject): Pair<Long, Int> {
+        val date = jsonObject.getLong("date")
+        val shares = jsonObject.getInt("shares")
+        return Pair(date, shares)
     }
 
     private fun readStream(inputStream: BufferedInputStream): String {

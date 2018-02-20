@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <integer-array name="cahrt_ids">
+        <item>@id/line_1_bar</item>
+        <item>@id/line_2_bar</item>
+        <item>@id/line_3_bar</item>
+        <item>@id/line_4_bar</item>
+        <item>@id/line_5_bar</item>
+    </integer-array>
+</resources>

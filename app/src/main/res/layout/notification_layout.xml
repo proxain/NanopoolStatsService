@@ -36,28 +36,16 @@
             android:textColor="@android:color/holo_green_dark"
             android:textSize="13sp"
             android:layout_alignParentEnd="true"
-            android:visibility="gone"/>
+            android:visibility="visible"/>
     </RelativeLayout>
-
-    <TextView
-        android:textSize="13sp"
-        android:textColor="#000"
-        android:text="@string/init_notify_content"
-        android:id="@+id/sending_request"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_toEndOf="@id/image_icon"
-        android:layout_below="@+id/title_info_container"
-        />
 
     <LinearLayout android:id="@+id/stats_info_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_toEndOf="@id/image_icon"
-        android:layout_below="@id/title_info_container"
-        android:weightSum="3"
-        android:visibility="gone">
+        android:layout_below="@+id/title_info_container"
+        android:weightSum="3">
         <TextView
             android:textSize="13sp"
             android:textColor="#000"
@@ -76,7 +64,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="center"/>
+            android:gravity="center"
+            android:visibility="gone"/>
 
         <TextView
             android:textSize="13sp"
@@ -86,6 +75,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:gravity="end"/>
+            android:gravity="end"
+            android:visibility="gone"/>
     </LinearLayout>
 </RelativeLayout>

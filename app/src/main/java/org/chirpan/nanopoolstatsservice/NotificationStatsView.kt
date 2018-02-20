@@ -2,6 +2,7 @@ package org.chirpan.nanopoolstatsservice
 
 import android.app.PendingIntent
 import android.content.Context
+import android.graphics.*
 import android.view.View
 import android.widget.RemoteViews
 import org.chirpan.nanopoolstatsservice.data.Account
@@ -75,9 +76,9 @@ class NotificationStatsView(private val context: Context, smallLayoutResId: Int,
 
     private fun changeInitContent() {
         smallRemoteViews.setViewVisibility(R.id.sync_status, View.VISIBLE)
-        smallRemoteViews.setViewVisibility(R.id.stats_info_container, View.VISIBLE)
 
-        smallRemoteViews.setViewVisibility(R.id.sending_request, View.GONE)
+        smallRemoteViews.setViewVisibility(R.id.hashes, View.VISIBLE)
+        smallRemoteViews.setViewVisibility(R.id.last_sync, View.VISIBLE)
     }
 
     fun setTitle(title: String) {
@@ -101,8 +102,7 @@ class NotificationStatsView(private val context: Context, smallLayoutResId: Int,
         }
     }
 
-    private fun lastSyncTime(): String {
-        val currentTime = System.currentTimeMillis()
+    private fun lastSyncTime(currentTime: Long = System.currentTimeMillis()): String {
         val calendar = Calendar.getInstance()
         calendar.timeInMillis = currentTime
 
@@ -118,5 +118,40 @@ class NotificationStatsView(private val context: Context, smallLayoutResId: Int,
         }
 
         return result
+    }
+
+    fun setShareHistory(shareRateTable: List<Pair<Long, Int>>) {
+        val latest = shareRateTable.subList(0, 5)
+        val max = latest.map { it.second }.max() ?: 0
+
+        drawLatest(latest, max)
+    }
+
+    private fun drawLatest(latest: List<Pair<Long, Int>>, max: Int) {
+        val sharesIdsArr = arrayListOf(R.id.line_1_shares, R.id.line_2_shares, R.id.line_3_shares, R.id.line_4_shares, R.id.line_5_shares)
+        val timesIdsArr = arrayListOf(R.id.line_1_time, R.id.line_2_time, R.id.line_3_time, R.id.line_4_time, R.id.line_5_time)
+        val chartIdsArr = arrayListOf(R.id.line_1_bar, R.id.line_2_bar, R.id.line_3_bar, R.id.line_4_bar, R.id.line_5_bar)
+
+        for (i in latest.indices) {
+            val bar = getBarImage(latest[i], max)
+            bigRemoteViews.setImageViewBitmap(chartIdsArr[i], bar)
+            bigRemoteViews.setTextViewText(timesIdsArr[i], lastSyncTime(latest[i].first))
+            bigRemoteViews.setTextViewText(sharesIdsArr[i], "${latest[i].second}")
+        }
+    }
+
+    private fun getBarImage(late: Pair<Long, Int>, max: Int): Bitmap {
+        val bitmap = Bitmap.createBitmap(100, 1, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bitmap)
+
+        val right = late.second * (100 / max)
+        val rect = Rect(0, 0, right, 1)
+        val paint = Paint()
+        paint.color = Color.GREEN
+
+        canvas.drawBitmap(bitmap, 0f, 0f, null)
+        canvas.drawRect(rect, paint)
+
+        return bitmap
     }
 }

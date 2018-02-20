@@ -11,6 +11,8 @@ data class Account(val account: String,
     lateinit var avgHashrate: Array<String>
     lateinit var workers: ArrayList<Worker>
 
+    lateinit var shareRateTable: List<Pair<Long, Int>>
+
     fun getTitle(): String {
         return workers[0].id
     }

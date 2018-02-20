@@ -28,7 +28,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="3dp"
-            android:background="@android:color/holo_green_light"
+            android:scaleType="fitXY"
             android:layout_toRightOf="@+id/line_1_time"
             android:layout_toLeftOf="@+id/line_1_shares"
             android:layout_alignBottom="@+id/line_1_time"/>
@@ -70,7 +70,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="3dp"
-            android:background="@android:color/holo_green_light"
+            android:scaleType="fitXY"
             android:layout_toRightOf="@+id/line_2_time"
             android:layout_toLeftOf="@+id/line_2_shares"
             android:layout_alignBottom="@+id/line_2_time"/>
@@ -112,7 +112,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="3dp"
-            android:background="@android:color/holo_green_light"
+            android:scaleType="fitXY"
             android:layout_toRightOf="@+id/line_3_time"
             android:layout_toLeftOf="@+id/line_3_shares"
             android:layout_alignBottom="@+id/line_3_time"/>
@@ -154,7 +154,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="3dp"
-            android:background="@android:color/holo_green_light"
+            android:scaleType="fitXY"
             android:layout_toRightOf="@+id/line_4_time"
             android:layout_toLeftOf="@+id/line_4_shares"
             android:layout_alignBottom="@+id/line_4_time"/>
@@ -196,7 +196,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_margin="3dp"
-            android:background="@android:color/holo_green_light"
+            android:scaleType="fitXY"
             android:layout_toRightOf="@+id/line_5_time"
             android:layout_toLeftOf="@+id/line_5_shares"
             android:layout_alignBottom="@+id/line_5_time"/>
